@@ -1,6 +1,13 @@
 package com.geekshirt.orderservice.controllers;
 
+import com.geekshirt.orderservice.dto.OrderRequest;
 import com.geekshirt.orderservice.dto.OrderResponse;
+import com.geekshirt.orderservice.entities.Order;
+import com.geekshirt.orderservice.service.OrderService;
+import com.geekshirt.orderservice.util.EntityDtoConverter;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,62 +16,42 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Api
 @RestController
 public class OrderController {
 
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private EntityDtoConverter entityDtoConverter;
+
+    @ApiOperation(value = "Retrieve all existed orders", notes = "This Operation returns all stored orders.")
     @GetMapping(value = "order")
     public ResponseEntity<List<OrderResponse>> findAll() {
-        List<OrderResponse> orderList = new ArrayList();
+        List<Order> orderList = orderService.findAll();
 
-        OrderResponse orderResponse = new OrderResponse();
-        orderResponse.setStatus("Pending");
-        orderResponse.setOrderId("1");
-        orderResponse.setAccountId("99999");
-        orderResponse.setTotalAmount(100.00);
-        orderResponse.setTotalTax(20.00);
-        orderResponse.setTransactionDate(new Date());
 
-        OrderResponse orderResponse2 = new OrderResponse();
-        orderResponse2.setStatus("Pending");
-        orderResponse2.setOrderId("2");
-        orderResponse2.setAccountId("99099");
-        orderResponse2.setTotalAmount(100.00);
-        orderResponse2.setTotalTax(20.00);
-        orderResponse2.setTransactionDate(new Date());
-
-        orderList.add(orderResponse);
-        orderList.add(orderResponse2);
-
-        return new ResponseEntity<>(orderList, HttpStatus.OK);
+        return new ResponseEntity<>(entityDtoConverter.convertEntityToDto(orderList), HttpStatus.OK);
     }
 
 
+    @ApiOperation(value = "Retrieve an order based on Id ", notes = "This Operation returns an orders using its Id")
     @GetMapping(value = "order/{orderId}")
-    public ResponseEntity<OrderResponse> findById(@PathVariable String orderId){
+    public ResponseEntity<OrderResponse> findById(@PathVariable Integer orderId){
+        Order orderResponse = orderService.findOrderById(orderId);
 
-        OrderResponse orderResponse = new OrderResponse();
-        orderResponse.setStatus("Pending");
-        orderResponse.setOrderId("1");
-        orderResponse.setAccountId("99999");
-        orderResponse.setTotalAmount(100.00);
-        orderResponse.setTotalTax(20.00);
-        orderResponse.setTransactionDate(new Date());
 
-        return new ResponseEntity<>(orderResponse, HttpStatus.OK);
+        return new ResponseEntity<>(entityDtoConverter.convertEntityToDto(orderResponse), HttpStatus.OK);
     }
 
-
+    @ApiOperation(value = "Creates an order", notes = "This Operation creates a new order.")
     @PostMapping (value = "order/create")
     public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest payload){
+        Order orderResponse = orderService.createOrder(payload);
 
-        OrderResponse orderResponse = new OrderResponse();
-        orderResponse.setStatus("Pending");
-        orderResponse.setOrderId("1");
-        orderResponse.setAccountId("99999");
-        orderResponse.setTotalAmount(100.00);
-        orderResponse.setTotalTax(20.00);
 
-        return new ResponseEntity<>(orderResponse, HttpStatus.CREATED);
+        return new ResponseEntity<>(entityDtoConverter.convertEntityToDto(orderResponse), HttpStatus.CREATED);
     }
 
 
